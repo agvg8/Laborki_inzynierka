@@ -1,10 +1,16 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
 using System.Drawing;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace CityExplorer
 {
-    public partial class Form2 : Form
+    public partial class Logowanie : Form
     {
         private Button btnLogIn;
         private Button btnBack;
@@ -15,11 +21,12 @@ namespace CityExplorer
         private Label lblLogin;
         private Label lblPassword;
 
-        public Form2()
+        public Logowanie()
         {
             InitializeComponent();
             this.WindowState = FormWindowState.Maximized;  // Maksymalizuje okno
-            this.BackgroundImageLayout = ImageLayout.Zoom; // Dopasuj rozmiar obrazu do okna
+            this.BackgroundImageLayout = ImageLayout.Zoom; //dopasuj rozmiar obrazu do okna
+
 
             //* ------------------------------ PRZYCISKI ------------------------------ *//
             btnLogIn = new Button
@@ -39,9 +46,23 @@ namespace CityExplorer
 
             btnLogIn.Click += (sender, e) =>
             {
-                Form4 form4 = new Form4();
-                form4.Show();
-                this.Hide();
+                // Pobranie danych z textboxów
+                string login = tbLogin.Text;
+                string password = tbPssw.Text;
+
+                // Weryfikacja loginu i hasła
+                if (login == "admin" && password == "admin")
+                {
+                    // Przekierowanie do formularza administracji
+                    Administracja administracja = new Administracja();
+                    administracja.Show();
+                    this.Hide();
+                }
+                else
+                {
+                    // Wyświetlenie komunikatu o błędnym loginie lub haśle
+                    MessageBox.Show("Zła nazwa lub hasło", "Błąd logowania", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
             };
 
             btnBack.Click += (sender, e) =>
@@ -76,7 +97,7 @@ namespace CityExplorer
                 Text = "Login:",
                 Font = new Font("Arial", 12, FontStyle.Bold),
                 AutoSize = true, // Automatycznie dopasowuje rozmiar do tekstu
-                BackColor = Color.Transparent // Kolor transparentny
+                BackColor = Color.Transparent //Kolor transparentny
             };
 
             lblPassword = new Label
@@ -110,6 +131,7 @@ namespace CityExplorer
             // Ustawienia podpisów nad textboxami
             lblLogin.Location = new Point(tbLogin.Left, tbLogin.Top - lblLogin.Height - 5);
             lblPassword.Location = new Point(tbPssw.Left, tbPssw.Top - lblPassword.Height - 5);
+
 
             // Ustawienia przycisków
             btnLogIn.Location = new Point(centerX - btnLogIn.Width - 10, centerY + tbPssw.Height + 50);

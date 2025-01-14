@@ -1,60 +1,49 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
 using System.Drawing;
-using System.Linq;
+using System.Security.Cryptography;
 using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
-using static System.Windows.Forms.VisualStyles.VisualStyleElement;
-using TextBox = System.Windows.Forms.TextBox;
-using Button = System.Windows.Forms.Button;
+using Realms;
 
 namespace CityExplorer
 {
     public partial class Form3 : Form
     {
-
-        // Lista kontrolki Label i TextBox
-        private List<Label> labels;
         private List<TextBox> textBoxes;
+        private List<Label> labels;
+        private Realm realm;
 
-        // Tworzenie przycisków
+        // Deklaracja przycisków
         private Button btnSignUp;
         private Button btnBack;
 
         public Form3()
         {
             InitializeComponent();
-            this.WindowState = FormWindowState.Maximized;  // Maksymalizuje okno
-            this.BackgroundImageLayout = ImageLayout.Zoom; // Dopasowanie obrazu do okna
+            this.WindowState = FormWindowState.Maximized; // Maksymalizowanie okna
+            this.BackgroundImageLayout = ImageLayout.Zoom;
 
-            // Inicjalizacja list
-            labels = new List<Label>();
+            // Ścieżka do bazy danych
+            string databasePath = @"E:\PROJEKT\CityExplorer\CityExplorer\myrealm.realm";
+            realm = Realm.GetInstance(new RealmConfiguration(databasePath));
+
             textBoxes = new List<TextBox>();
-
-            // Tworzenie etykiet i TextBox
-            CreateFields();
+            labels = new List<Label>();
 
             // Tworzenie przycisków
-            btnSignUp = new Button();
-            btnSignUp.Text = "Zarejestruj";
-            btnSignUp.Size = new Size(120, 40);
-            btnSignUp.Click += btnSignUp_Click;
+            btnSignUp = new Button
+            {
+                Text = "Zarejestruj",
+                Size = new Size(120, 40)
+            };
+            btnSignUp.Click += BtnSignUp_Click;
 
-            btnBack = new Button();
-            btnBack.Text = "Powrót";
-            btnBack.Size = new Size(120, 40);
-
-            // Dodanie przycisków do formularza
-            this.Controls.Add(btnSignUp);
-            this.Controls.Add(btnBack);
-
-            // Pozycjonowanie przycisków
-            PositionButtons();
-
-            // Zdarzenie kliknięcia przycisku powrotu
+            btnBack = new Button
+            {
+                Text = "Powrót",
+                Size = new Size(120, 40)
+            };
             btnBack.Click += (sender, e) =>
             {
                 Form1 form1 = new Form1();
@@ -62,86 +51,13 @@ namespace CityExplorer
                 this.Hide();
             };
 
+            this.Controls.Add(btnSignUp);
+            this.Controls.Add(btnBack);
+
             // Rejestracja zdarzenia Resize
             this.Resize += MainForm_Resize;
-        }
 
-        private void btnSignUp_Click(object sender, EventArgs e)
-        {
-            // Logika rejestracji - np. zapisz dane do bazy, pliku itp.
-
-            // Powiadomienie o poprawnej rejestracji
-            DialogResult result = MessageBox.Show("Rejestracja zakończona pomyślnie!", "Sukces", MessageBoxButtons.OK, MessageBoxIcon.Information);
-
-            if (result == DialogResult.OK)
-            {
-                // Po kliknięciu "OK" przenosimy do Form2
-                Form2 form2 = new Form2();
-                form2.Show();  // Otwórz Form2
-                this.Hide();   // Ukryj obecne okno (Form3)
-            }
-        }
-
-        // Ustawienie przycisków
-        private void PositionButtons()
-        {
-            // Obliczanie środkowego punktu
-            int totalWidth = btnSignUp.Width + btnBack.Width + 20; // Szerokość obu przycisków i odstęp (20 pikseli)
-            int x = (this.ClientSize.Width - totalWidth) / 2; // Pozycja X, aby oba przyciski były wyśrodkowane
-            int y = (this.ClientSize.Height - btnBack.Height) / 2 + 250; // Pozycja Y, aby przyciski były 100px niżej
-
-            // Lokalizacja przycisków
-            btnSignUp.Location = new Point(x, y);
-            btnBack.Location = new Point(x + btnSignUp.Width + 20, y); // Przycisk 2 jest 20 pikseli na prawo od btnSignUp
-        }
-
-        // Zdarzenie wywoływane przy zmianie rozmiaru okna
-        private void MainForm_Resize(object sender, EventArgs e)
-        {
-            PositionButtons(); // Przemieszczenie przycisków przy każdej zmianie rozmiaru okna
-        }
-
-        private void CreateFields()
-        {
-            // Teksty do pól
-            string[] fieldNames = new string[]
-            {
-                "Nazwa użytkownika:",
-                "Imię:",
-                "Nazwisko:",
-                "Hasło:",
-                "Narodowość:",
-                "Miasto:"
-            };
-
-            int currentYPosition = 100;  // Pozycja początkowa w pionie
-            int xPosition = 40;          // Pozycja początkowa w poziomie
-            int textBoxWidth = 600;      // Szerokość TextBox
-            int labelHeight = 20;        // Wysokość etykiety
-            int fieldHeight = 30;        // Wysokość TextBoxa
-            int verticalSpacing = 20;    // Odstęp między polami
-
-            for (int i = 0; i < fieldNames.Length; i++)
-            {
-                // Tworzymy etykiety
-                Label label = new Label();
-                label.Text = fieldNames[i];
-                label.Location = new Point(xPosition, currentYPosition);
-                label.Size = new Size(textBoxWidth, labelHeight);
-                label.BackColor = Color.Transparent;
-                this.Controls.Add(label);
-                labels.Add(label);
-
-                // Tworzymy TextBox
-                TextBox textBox = new TextBox();
-                textBox.Width = textBoxWidth;
-                textBox.Location = new Point(xPosition, currentYPosition + labelHeight + 5); // TextBox 5px poniżej etykiety
-                this.Controls.Add(textBox);
-                textBoxes.Add(textBox);
-
-                // Zwiększamy pozycję Y dla następnego pola
-                currentYPosition += labelHeight + fieldHeight + verticalSpacing;
-            }
+            AddTextBoxesAndLabels(); // Dodanie kontrolek przy inicjalizacji
         }
 
         protected override void OnPaint(PaintEventArgs e)
@@ -153,61 +69,162 @@ namespace CityExplorer
             int formHeight = this.ClientSize.Height;
 
             // Wymiary prostokąta
-            int rectWidth = formWidth - 1200;             // Zmieniamy szerokość na szerokość formularza minus 10px
-            int rectHeight = formHeight - 400;            // Wysokość prostokąta pozostaje bez zmian
+            int rectWidth = formWidth - 1200; // Szerokość prostokąta
+            int rectHeight = formHeight - 400; // Wysokość prostokąta
 
             // Pozycja prostokąta na środku ekranu
             int x = (formWidth - rectWidth) / 2;
             int y = (formHeight - rectHeight) / 2;
 
             // Przezroczystość
-            Color transparentWhite = Color.FromArgb(160, 255, 255, 255);  // 30% przezroczystości (0-255)
+            Color transparentWhite = Color.FromArgb(160, 255, 255, 255); // 30% przezroczystości
             using (Brush brush = new SolidBrush(transparentWhite))
             {
                 e.Graphics.FillRectangle(brush, x, y, rectWidth, rectHeight);
             }
 
-            // Tekst
+            // Tekst "Rejestracja"
             string text = "Rejestracja";
+            Font font = new Font("Arial", 20, FontStyle.Bold);
+            SizeF textSize = e.Graphics.MeasureString(text, font);
+            int textX = x + (rectWidth - (int)textSize.Width) / 2;
+            int textY = y + 40;
 
-            e.Graphics.DrawString(text, new Font("Arial", 20, FontStyle.Bold), Brushes.Black, new Point(x + 40, y + 40));
+            e.Graphics.DrawString(text, font, Brushes.Black, new PointF(textX, textY));
 
+            // Pozycjonowanie przycisków
+            PositionButtons();
         }
 
-        // Jeśli chcesz, aby kontrolka TextBox była wyświetlana w tym samym czasie, dodaj jej odpowiednią pozycję w konstruktorze
-        protected override void OnResize(EventArgs e)
+        private void AddTextBoxesAndLabels()
         {
-            base.OnResize(e);
-            int formWidth = this.ClientSize.Width;
-            int formHeight = this.ClientSize.Height;
+            // Usuwanie wcześniej wygenerowanych kontrolek
+            foreach (var txtBox in textBoxes)
+                this.Controls.Remove(txtBox);
+            foreach (var lbl in labels)
+                this.Controls.Remove(lbl);
 
-            // Pozycjonowanie TextBoxa tuż poniżej napisu "Wprowadź dane"
-            int xPosition = (formWidth - (formWidth - 1200)) / 2 + 40; // Tak, aby TextBox był wewnątrz prostokąta (margines)
-            int textBoxWidth = 600;      // Szerokość TextBoxa
-            int verticalSpacing = 20;    // Odstęp między polami (etykieta + TextBox)
+            // Czyszczenie list z kontrolek
+            textBoxes.Clear();
+            labels.Clear();
 
-            int currentYPosition = (formHeight - (formHeight - 400)) / 2 + 100 + 20; // Tekst "Wprowadź dane" znajduje się na y + 70, więc dodajemy 20px, aby TextBox był poniżej
+            string[] labelsText = { "Nazwa użytkownika:", "Imię:", "Nazwisko:", "Hasło:", "Narodowość:", "Miasto:" };
+            int startX = this.ClientSize.Width / 2 - 200; // Pozycja X dla kontrolek
+            int startY = this.ClientSize.Height / 2 - 150; // Pozycja Y dla kontrolek, żeby wyśrodkować je w pionie
 
-            // Upewnij się, że listy 'labels' i 'textBoxes' zostały zainicjowane
-            if (labels == null || textBoxes == null)
+            // Obliczamy, jak rozmieszczać kontrolki
+            for (int i = 0; i < labelsText.Length; i++)
             {
-                return;  // Zatrzymaj metodę, jeśli listy są niezainicjowane
+                // Dodanie etykiety
+                Label lbl = new Label
+                {
+                    Text = labelsText[i],
+                    Location = new Point(startX, startY + (i * 60)), // Rozmieszczanie w pionie
+                    AutoSize = true
+                };
+                this.Controls.Add(lbl);
+                labels.Add(lbl);
+
+                // Dodanie TextBoxa
+                TextBox txtBox = new TextBox
+                {
+                    Name = $"txtBox{i}",
+                    Location = new Point(startX + 150, startY + (i * 60)), // Rozmieszczanie w pionie
+                    Width = 200
+                };
+                if (i == 3) // Hasło
+                    txtBox.UseSystemPasswordChar = true; // Ukrywanie hasła
+
+                this.Controls.Add(txtBox);
+                textBoxes.Add(txtBox);
             }
 
-            // Iterujemy po wszystkich etykietach i TextBoxach
-            for (int i = 0; i < labels.Count; i++)
+            // Pozycjonowanie przycisków
+            PositionButtons();
+        }
+
+        private void PositionButtons()
+        {
+            // Obliczanie środkowego punktu dla przycisków
+            int totalWidth = btnSignUp.Width + btnBack.Width + 20; // Szerokość obu przycisków i odstęp (20 pikseli)
+            int x = (this.ClientSize.Width - totalWidth) / 2; // Pozycja X, aby oba przyciski były wyśrodkowane
+            int y = this.ClientSize.Height / 2 + 220; // Pozycja Y, przyciski poniżej formularza, ale wciąż wyśrodkowane
+
+            btnSignUp.Location = new Point(x, y);
+            btnBack.Location = new Point(x + btnSignUp.Width + 20, y); // Przycisk „Powrót” obok „Zarejestruj”
+        }
+
+        private void MainForm_Resize(object sender, EventArgs e)
+        {
+            // Dynamiczne pozycjonowanie przycisków przy każdej zmianie rozmiaru okna
+            PositionButtons();
+
+            // Ponowne wyśrodkowanie formularza i kontrolek przy zmianie rozmiaru okna
+            AddTextBoxesAndLabels();
+        }
+
+        private string HashPassword(string password)
+        {
+            using (SHA256 sha256Hash = SHA256.Create())
             {
-                // Ustawienie pozycji dla Label
-                labels[i].Location = new Point(xPosition, currentYPosition);
-                labels[i].Width = textBoxWidth;
-
-                // Ustawienie pozycji dla TextBox
-                textBoxes[i].Location = new Point(xPosition, currentYPosition + labels[i].Height + 5); // TextBox 5px poniżej etykiety
-                textBoxes[i].Width = textBoxWidth;
-
-                // Zwiększamy pozycję Y dla następnego pola
-                currentYPosition += labels[i].Height + textBoxes[i].Height + verticalSpacing;
+                // Zmieniamy hasło na tablicę bajtów
+                byte[] bytes = sha256Hash.ComputeHash(Encoding.UTF8.GetBytes(password));
+                // Przekształcamy tablicę bajtów na ciąg szesnastkowy
+                StringBuilder builder = new StringBuilder();
+                for (int i = 0; i < bytes.Length; i++)
+                {
+                    builder.Append(bytes[i].ToString("x2"));
+                }
+                return builder.ToString();
             }
+        }
+
+        private void BtnSignUp_Click(object sender, EventArgs e)
+        {
+            // Sprawdzenie, czy wszystkie pola tekstowe są wypełnione
+            foreach (var txtBox in textBoxes)
+            {
+                if (string.IsNullOrWhiteSpace(txtBox.Text))
+                {
+                    MessageBox.Show("Wszystkie pola muszą być wypełnione.");
+                    return;
+                }
+            }
+
+            // Sprawdzenie, czy nazwa użytkownika istnieje w bazie
+            string username = textBoxes[0].Text;
+            var existingUser = realm.All<User>().FirstOrDefault(u => u.Username == username);
+            if (existingUser != null)
+            {
+                MessageBox.Show("Nazwa użytkownika jest zajęta. Proszę wybrać inną.");
+                return;
+            }
+
+            // Haszowanie hasła przed zapisaniem
+            string hashedPassword = HashPassword(textBoxes[3].Text);
+
+            // Tworzenie nowego użytkownika
+            realm.Write(() =>
+            {
+                var newUser = new User
+                {
+                    Username = textBoxes[0].Text,
+                    FirstName = textBoxes[1].Text,
+                    LastName = textBoxes[2].Text,
+                    Password = hashedPassword, // Zapisujemy zahashowane hasło
+                    Nationality = textBoxes[4].Text,
+                    City = textBoxes[5].Text
+                };
+                realm.Add(newUser);
+            });
+
+            // Wyświetlenie komunikatu o sukcesie
+            MessageBox.Show("Rejestracja zakończona sukcesem.");
+
+            // Przekierowanie do Form2 po rejestracji
+            Form2 form2 = new Form2();
+            form2.Show();
+            this.Hide();  // Ukrywanie obecnego formularza (Form3)
         }
     }
 }

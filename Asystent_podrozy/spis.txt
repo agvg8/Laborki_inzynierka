@@ -1,0 +1,26 @@
+Przewidywanie kosztów podróży/lotów w zależności od płci
+ - płeć - X
+ - gdzie lecimy i skąd (to i from) - X
+ - no i koszta (do wyboru, full koszt albo samego lotu, albo hotelu) - Y
+
+--------------------------------------------------------------------------------------------------
+
+Predykcja dystansu na podstawie miejsca wylotu i typu lotu
+ - kolumna from - X
+ - kolumna flightType - X
+ - no i nasz dlightDistance - Y
+
+--------------------------------------------------------------------------------------------------
+done
+Wybór miejsca hotelu na podstawie wieku podróżnika
+ - wiek - X
+ - hotelName lub hotelPlace - Y
+
+--------------------------------------------------------------------------------------------------
+done
+Predykcja zależności między długością pobytu, wyboru miesiąca, oraz wieku podróżującego
+ - wiek - X
+ - miesiąc - X
+ - długoś pobytu - Y
+
+--------------------------------------------------------------------------------------------------
